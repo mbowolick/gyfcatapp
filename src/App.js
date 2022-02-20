@@ -7,6 +7,9 @@ import {
   Spinner,
   Stack,
   Text,
+  useClipboard,
+  useToast,
+  Tooltip,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import {
@@ -16,13 +19,37 @@ import {
 } from "./services/gyfcatapi";
 
 function GifCard(props) {
+  const { onCopy } = useClipboard(props.gifLink);
+  const toast = useToast();
+
+  const handlerClick = () => {
+    toast({
+      position: "top",
+      title: "GIF Link Copied to Clipboard",
+      status: "success",
+    });
+    onCopy();
+  };
+
   return (
-    <Image
-      key={props.gfyId}
-      src={props.gifLink}
-      alt={props.gfyName}
-      h="200px"
-    />
+    <Tooltip label="Click to copy the GIF link" placement="top">
+      <Image
+        key={props.gfyId}
+        src={props.gifLink}
+        alt={props.gfyName}
+        h="200px"
+        onClick={handlerClick}
+        _hover={{
+          boxShadow: "outline",
+          cursor: "pointer",
+        }}
+        _active={{
+          border: "1px solid",
+          borderColor: "green.400",
+          boxShadow: "sm",
+        }}
+      />
+    </Tooltip>
   );
 }
 

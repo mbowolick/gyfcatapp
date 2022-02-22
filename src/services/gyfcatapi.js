@@ -6,10 +6,16 @@ import axios from "axios";
  * used for local development. Secrets should not be held client side,
  * alternatively:
  *  1. Use an auth server (exchange a temp token for real token)
- *  2. Browser-client authorisation
+ *  2. Browser-client authorisation flow
+ * Both following recommended secure flows like the PKCE (Proof Key for Code Exchange) extension for OAuth
  */
 const { REACT_APP_CLIENT_ID, REACT_APP_CLIENT_SECRET } = process.env;
 
+/**
+ * generateToken performs GyfCat Oauth Client Credentials Flow to generate the
+ * bearer access_token to be shared on future requests.
+ * @returns access_token for future bearer auth requests
+ */
 export async function generateToken() {
   try {
     const response = await axios.post("https://api.gfycat.com/v1/oauth/token", {

@@ -5,9 +5,9 @@ import axios from "axios";
  * IMPORTANT! This approach is not intended for production. Only to be
  * used for local development. Secrets should not be held client side,
  * alternatively:
- *  1. Use an auth server (exchange a temp token for real token)
- *  2. Browser-client authorisation flow
- * Both following recommended secure flows like the PKCE (Proof Key for Code Exchange) extension for OAuth
+ *  1. Browser-client authorisation flow:
+ *     https://developers.gfycat.com/api/#browser-based-authentication
+ *  2. Wrap the APIs via a backend (and keep secrets via a secret manager.)
  */
 const { REACT_APP_CLIENT_ID, REACT_APP_CLIENT_SECRET } = process.env;
 

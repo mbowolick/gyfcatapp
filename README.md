@@ -15,12 +15,17 @@ First step, create a Gyfcat developer account to get your client_id and client_s
 [https://developers.gfycat.com/signup](https://developers.gfycat.com/signup/#/)
 
 Then, create a `.env` file and add to the project root.
-Populate the .env file with the Gyfcat client_id and client_secret like so:
+Populate the .env file with the Gyfcat client_id like so:
 
 ```
 REACT_APP_CLIENT_ID = "XXXXXXXXXXXXXXX"
-REACT_APP_CLIENT_SECRET = "XXXXXXXXXXXXXXX"
 ```
+
+**Important Note:**
+
+Because this is a React Single Page (Web) App the `client_secret` should **not** be configured under environment variable. Client Secret could easily be eavesdropped on.
+
+This Gyfcat App requires only `client_id` because it follows the GyfCat Browser-Based Authorization Flow. See more info on the browser flow here: [https://developers.gfycat.com/api/#browser-based-authentication](https://developers.gfycat.com/api/#browser-based-authentication)
 
 ## Install
 

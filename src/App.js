@@ -1,136 +1,41 @@
 import {
+  Button,
   ChakraProvider,
   Flex,
   Heading,
-  Image,
   Input,
-  Spinner,
   Stack,
   Text,
-  useClipboard,
-  useToast,
-  Tooltip,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
-import {
-  generateToken,
-  getRefinedGifs,
-  getTrendingGifs,
-} from "./services/gyfcatapi";
+import { useState } from "react";
+import { RefinedGifs, TrendingGifs, GyfCatCallback } from "./components/gyfcat";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-function GifCard(props) {
-  const { onCopy } = useClipboard(props.gifLink);
-  const toast = useToast();
+// Fetch Environment Variables (requires .env file in app root)
+const { REACT_APP_CLIENT_ID } = process.env;
 
-  const handlerClick = () => {
-    toast({
-      position: "top",
-      title: "GIF Link Copied to Clipboard",
-      status: "success",
-      duration: 1500,
-    });
-    onCopy();
-  };
+// Redirect URI is established for now for local development only
+const redirectUri = "http%3A%2F%2Flocalhost%3A3000%2Fhandler";
 
-  return (
-    <Tooltip label="Click to copy the GIF link" placement="top">
-      <Image
-        src={props.gifLink}
-        alt={props.gfyName}
-        h="200px"
-        onClick={handlerClick}
-        _hover={{
-          boxShadow: "outline",
-          cursor: "pointer",
-        }}
-        _active={{
-          border: "1px solid",
-          borderColor: "green.400",
-          boxShadow: "sm",
-        }}
-      />
-    </Tooltip>
-  );
-}
-
-function RefinedGifs(props) {
-  const [gifs, setGifs] = useState(null);
-
-  useEffect(() => {
-    const fetchRefinedGifs = async () => {
-      const refinedGifs = await getRefinedGifs(
-        props.accessToken,
-        props.searchTerm
-      );
-      setGifs(refinedGifs);
-    };
-    fetchRefinedGifs();
-  }, [props]);
-
-  if (!gifs) return <Spinner />;
-
-  return (
-    <>
-      <Heading as="h3" size="md">
-        {`Searching by : "${props.searchTerm}"`}
-      </Heading>
-      <Flex flexWrap="wrap" gridGap={2}>
-        {gifs.length === 0 ? (
-          <Text mt={2}>No GIFs found :( Try Another search term.</Text>
-        ) : (
-          gifs.map((i) => (
-            <GifCard gfyId={i.gfyId} gifLink={i.gifUrl} gfyName={i.gfyName} />
-          ))
-        )}
-      </Flex>
-    </>
-  );
-}
-
-function TrendingGifs(props) {
-  const [gifs, setGifs] = useState(null);
-
-  useEffect(() => {
-    const fetchTrending = async () => {
-      const trendingGifs = await getTrendingGifs(props.accessToken);
-      setGifs(trendingGifs);
-    };
-    fetchTrending();
-  }, [props.accessToken]);
-
-  if (!gifs) return <Spinner />;
-
-  return (
-    <>
-      <Heading as="h3" size="md">
-        Trending:
-      </Heading>
-      <Flex flexWrap="wrap" gridGap={2}>
-        {gifs.map((i) => (
-          <GifCard key={i.gfyId} gifLink={i.gifUrl} gfyName={i.gfyName} />
-        ))}
-      </Flex>
-    </>
-  );
-}
-
-function Base() {
+function Base(props) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [accessToken, setAccessToken] = useState("");
 
-  useEffect(() => {
-    const fetchToken = async () => {
-      const token = await generateToken();
-      setAccessToken(token);
-    };
-    fetchToken();
-  }, []);
-
-  if (!accessToken) {
+  if (!props.accessToken) {
     return (
-      <Flex m={10} gridGap={4} flexDir="column" alignItems="center">
-        <Text>Loading App...</Text>
-        <Spinner />
+      <Flex m={10}>
+        <Stack gridGap={4}>
+          <Heading as="h1">Welcome to the One Stop GIF Shop!</Heading>
+          <Text>Please login to start your GIF shopping :) </Text>
+          <Flex>
+            <Button
+              as="a"
+              color="blue.400"
+              href={`https://gfycat.com/oauth/authorize?client_id=${REACT_APP_CLIENT_ID}&scope=all&state=login&response_type=token&redirect_uri=${redirectUri}`}
+            >
+              Login through GyfCat
+            </Button>
+          </Flex>
+        </Stack>
       </Flex>
     );
   }
@@ -146,9 +51,12 @@ function Base() {
         />
         {searchTerm !== "" && searchTerm.length > 2 ? (
           // When searching show the refined block, else show trending
-          <RefinedGifs searchTerm={searchTerm} accessToken={accessToken} />
+          <RefinedGifs
+            searchTerm={searchTerm}
+            accessToken={props.accessToken}
+          />
         ) : (
-          <TrendingGifs accessToken={accessToken} />
+          <TrendingGifs accessToken={props.accessToken} />
         )}
       </Stack>
     </Flex>
@@ -156,9 +64,19 @@ function Base() {
 }
 
 function App() {
+  const [accessToken, setAccessToken] = useState("");
+
   return (
     <ChakraProvider>
-      <Base />
+      <BrowserRouter>
+        <Routes>
+          <Route exact path="/" element={<Base accessToken={accessToken} />} />
+          <Route
+            path="/handler"
+            element={<GyfCatCallback setAccessToken={setAccessToken} />}
+          />
+        </Routes>
+      </BrowserRouter>
     </ChakraProvider>
   );
 }
